@@ -8,12 +8,108 @@ public class regex {
 
     public static void main(final String args[]) {
 
+
         maskingDemo();
         summonerDemo();
         urlDemo();
+        decimalDemo();
+        currencyDemo();
+        ipAddressDemo();
+        datesDemo();
+        HTMLTagDemo();
+    }
+
+
+    static void HTMLTagDemo() {
+        String html[] = {
+                // Yes
+                "<basic></basic>",
+                "<basic ></basic>",
+                "<basic >< /basic>",
+                "< basic >< /basic>",
+                "<basic >< /basic >",
+                "<string>foo</string>",
+                "<href a =\"fooish\">mylink</href>",
+                "</onlyOneBasic>",
+                "< /onlyOneBasic>",
+                "< /onlyOneBasic >",
+                "</onlyOneBasic >",
+                "</onlyOne prop=\"fooish\">",
+
+                // No
+                "<i invalidProps></i>",
+                "<invalid>",
+                "<alsoInvalid></nuts>"
+        };
+
+        // "<(\\w+\\b).*>\\w*</\\1>|" +
+        String htmlRegEx =
+                "^" +
+                    // formatted like <tag [optional props]>..</tag>
+
+                        // Start tag
+                        "<\\s*(\\w+)\\s*" +
+
+                            // Optional properties
+                            "(\\w+\\s*=\\s*\".*\")*" +
+
+                        "\\s*>" +
+
+                            // Value
+                        ".*"    +
+                        // End tag
+                        "<\\s*/\\1\\s*>" +
+
+                    // formatted like </tag [optional props]>
+                    "|<\\s*/\\w*\\s*" +
+
+                        // Optional properties
+                        "(\\w+\\s*=\\s*\".*\")*" +
+
+                    "\\s*>" +
+                "$";
+        tester(html, htmlRegEx);
 
     }
 
+    static void datesDemo() {
+
+        String dates[] = {
+                "2000-11-15",
+                "2000/11/15",
+                "2000\\11\\15",
+                "2000-6-9",
+                "2000-06-09",
+                "2000-4-30",
+                "2000-3-31",
+                "2000/6/9",
+                "2000-0-31",          // No
+                "2000-14-16" ,        // No
+                "2000-12-32",         // No
+                "2000-12-55",         // No
+                "2000-09-32",         // No
+        };
+
+        String regex = "^" +
+                // Year
+                    "\\d{0,4}" +
+
+                // Seperator
+                    "[-/\\\\]" +
+
+                // Month
+                    "(1[0-2]|0?[1-9])" +
+
+                // Seperator
+                "[-/\\\\]" +
+
+                // Day
+                    "(3[01]|[0-2]?\\d)" +
+                "$";
+        tester(dates,regex);
+
+
+    }
     static void maskingDemo() {
         String input =
                 "User clientId=23421. Some more text clientId=33432. This clientNum=100";
@@ -46,7 +142,79 @@ public class regex {
         }
     }
 
+    static void currencyDemo() {
 
+        String[] currency = {
+                "$5.1",
+                "$314.123434",
+                "$0.123",
+                "$.389",
+                "$23",
+                "$23.",      // No
+                "$.2.3",     // No
+                "$"          // No
+        };
+
+        tester(currency, "^\\$((\\d*\\.\\d+)|(\\d+))$");
+    }
+
+
+    static void ipAddressDemo() {
+
+        String[] addrs = {
+                "1.2.3.4",
+                "0.0.0.0",
+                "67.52.159.38",
+                "067.052.159.038",
+                "1.3",              // No
+                "300.23.3.4",       // No
+                "244.888.12.0"      // No
+        };
+        tester(addrs, "^" +
+                "(" +
+                    "(" +
+                        "(25[0-5]) | "    +    // 250 - 255
+                        "(2[0-4][0-9]) |" +    // 200 - 249
+                        "([0-1]?\\d{0,2})"  +  // 0-199
+                    ")" +
+                "\\.){3}" +
+                    "("  +
+                        "(25[0-5]) | "    +    // 250 - 255
+                        "(2[0-4][0-9]) |" +    // 200 - 249
+                        "([0-1]?\\d{0,2})"  +  // 0-199
+                    ")"  +
+                "$");
+
+    }
+
+    static void decimalDemo() {
+        String[] decimals  = {
+                "5.1",
+                "314.123434",
+                "0.123",
+                ".389",
+                "23",
+                "23.",      // No
+                ".2.3",     // No
+                ""          // No
+
+        };
+
+                // Two cases:  first case with decimal, second case no decimal
+        tester(decimals,"^(\\d*\\.\\d+)|(\\d+)$");
+    }
+
+    static void tester(String[] testCases, String regex) {
+
+        System.out.println("\n\nTesting regex: " + regex);
+        Pattern p = Pattern.compile(regex);
+
+        for(String s : testCases) {
+            Matcher m = p.matcher(s);
+            System.out.println("testString: [" + s + "] " + (m.matches() ? "matches" : "does not match regex: [" + regex + "]"));
+        }
+
+    }
     static void urlDemo() {
 
         String[] urls = {
